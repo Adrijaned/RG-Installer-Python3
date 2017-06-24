@@ -129,7 +129,7 @@ def main():
     # Download config
     currentFile = "config.ini"
     try:
-        url.urlretrieve(url=root_url + "rginstall.ini",
+        url.urlretrieve(url=root_url + "rginstaller.ini",
                         filename=tempDir + "config.ini",
                         reporthook=urlretrievehook)
     # Except nearly anything - there so many things that may go wrong and no way to handle them
@@ -137,6 +137,8 @@ def main():
         print("Nepodařilo se stáhnout konfiguraci, zkontrolujte své internetové připojení a "
               "v případě přetrvávajících obtíží prosím nahlašte bug na "
               "'https://forum.rebelgames.net/")
+        input()
+        exit(1)
     # Allow developer versions of modpacks?
     devVersions = accept("Chcete povolit testovací verze modpacků? ")
 
