@@ -48,10 +48,13 @@ def print_makedirs_error(extended=""):
 def urlretrievehook(in1, in2, in3):
     """Outputs progress of downloads"""
     if in1 * in2 >= in3:
-        print("Staženo 100 % z " + currentFile + ", celková velikost: " + in3 + " B")
+        # Hack - add so many whitespace characters
+        print("Staženo 100 % z '" + currentFile + "', celková velikost: " + str(in3) + " B"
+                                                                                       "                  ")
     else:
-        temp_toPrint = "Staženo " + str(int(in1 * in2 / (in3 / 100))) + " % (" + (in1 * in2) + \
-                       " B) z " + currentFile + ", " + "celková velikost: " + in3 + " B"
+        temp_toPrint = "Staženo " + str(int(in1 * in2 / (in3 / 100))) + " % (" + \
+                       str(in1 * in2) + " B) z '" + currentFile + "', " + "celková velikost: " + \
+                       str(in3) + " B"
         print(temp_toPrint, end="")
         for x in range(len(temp_toPrint)):
             print("\b", end="")
@@ -60,10 +63,12 @@ def urlretrievehook(in1, in2, in3):
 def addProfiles(data):
     """Add profiles to launcher_profiles.json"""
     for profile in new_profiles:
+        if  "profiles" not in data:
+            data["profiles"] = {}
         data["profiles"][profile["name"]] = {u'gameDir': u'' + profile["dir"],
                                              u'name': u'' + profile["name"] + '',
                                              u'lastVersionId': u'' + profile["forge"]}
-        outfile = open(file=mainDir + "launcher_profiles.json", mode="wb")
+        outfile = open(file=mainDir + "launcher_profiles.json", mode="w")
         json.dump(obj=data, fp=outfile, sort_keys=True, indent=4)
         print("Hotovo")
 
@@ -99,11 +104,12 @@ def main():
 
     # Create temp dir
     tempDir = "/tmp/rginstall/"
-    if not os.path.isdir(tempDir):
-        try:
-            os.makedirs(tempDir)
-        except OSError:
-            print_makedirs_error(extended="error in " + tempDir)
+    if os.path.isdir(tempDir):
+        shutil.rmtree(tempDir)
+    try:
+        os.makedirs(tempDir)
+    except OSError:
+        print_makedirs_error(extended="error in " + tempDir)
 
     # Check for 'versions' dir
     if not os.path.isdir(mainDir + "versions"):
@@ -134,8 +140,8 @@ def main():
                         reporthook=urlretrievehook)
     # Except nearly anything - there so many things that may go wrong and no way to handle them
     except:
-        print("Nepodařilo se stáhnout konfiguraci, zkontrolujte své internetové připojení a "
-              "v případě přetrvávajících obtíží prosím nahlašte bug na "
+        print("Nepodařilo se stáhnout konfiguraci instalátoru, zkontrolujte své internetové "
+              "připojení a v případě přetrvávajících obtíží prosím nahlašte bug na "
               "'https://forum.rebelgames.net/")
         input()
         exit(1)
@@ -144,9 +150,9 @@ def main():
 
     # Do install forge + forgelibs?
     if accept("Chcete nainstalovat Forge? "):
-        toDownload.append({"path": "versions/", "item": "forge"})
+        toDownload.append({"path": "versions/", "item": "forge", "modpack": False})
     if accept("Chcete nainstalovat knihovny Forge? "):
-        toDownload.append({"path": "", "item": "libs"})
+        toDownload.append({"path": "", "item": "libs", "modpack": False})
 
     # Read config, ask to install everything from it
     config.read(tempDir + "config.ini")
@@ -174,7 +180,7 @@ def main():
             new_profiles.append({"name": "[RG] " + option["desc"],
                                  "forge": option["forge"],
                                  "dir": mainDir + option["item"] + "/"})
-        tempFile = tarfile.open(name=tempDir + option["item"] + ".tar.gz")
+        tempFile = tarfile.open(name=tempDir + ".minecraft/" + option["item"] + ".tar.gz")
         tempFile.extractall(path=mainDir + option["path"] + option["item"])
         tempFile.close()
 
@@ -186,7 +192,7 @@ def main():
             data = json.load(json_file)
             addProfiles(data=data)
         except ValueError:
-            print("Neplatný JSON. Zkuste odstranit soubor '§INSTALLDIR§/launcher%profiles.json'.")
+            print("Neplatný JSON. Zkuste odstranit soubor '§INSTALLDIR§/launcher_profiles.json'.")
             exit(1)
     elif accept("Nebyl nalezen soubor 'launcher_profiles.json'. Přejete si jej vytvořit? "):
         print("Vytváření profilů...", end="")
