@@ -7,6 +7,7 @@ import configparser
 import shutil
 import tarfile
 import json
+import time
 
 # Version of installer
 version = "1.0"
@@ -41,7 +42,7 @@ def print_makedirs_error(extended=""):
           "právy dostačujícími pro zápis do zadané instalační lokace, a zkuste spustit tento " +
           "instalátor znovu.\nV případě přetrvávajících problémů neváhejte někoho kontaktovat " +
           "na 'https://forum.rebelgames.net/'. Hodně štěstí!" + extended)
-    input()
+    time.sleep(3)
     exit(1)
 
 
@@ -70,7 +71,7 @@ def addProfiles(data):
                                              u'lastVersionId': u'' + profile["forge"]}
         outfile = open(file=mainDir + "launcher_profiles.json", mode="w")
         json.dump(obj=data, fp=outfile, sort_keys=True, indent=4)
-        print("Hotovo")
+    print("Hotovo")
 
 
 def main():
@@ -99,7 +100,7 @@ def main():
                 print_makedirs_error()
         else:
             print("Vytvořte prosím cílovou složku manuálně nebo zadejte instalaci do jiné lokace")
-            input()
+            time.sleep(3)
             exit(0)
 
     # Create temp dir
@@ -143,7 +144,7 @@ def main():
         print("Nepodařilo se stáhnout konfiguraci instalátoru, zkontrolujte své internetové "
               "připojení a v případě přetrvávajících obtíží prosím nahlašte bug na "
               "'https://forum.rebelgames.net/")
-        input()
+        time.sleep(3)
         exit(1)
     # Allow developer versions of modpacks?
     devVersions = accept("Chcete povolit testovací verze modpacků? ")
@@ -203,7 +204,7 @@ def main():
     # Remove temporal directories
     shutil.rmtree(tempDir)
     print("Instalace hotova")
-    input()
+    time.sleep(3)
 
 
 if __name__ == '__main__':
