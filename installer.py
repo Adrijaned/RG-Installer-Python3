@@ -167,12 +167,17 @@ def main():
     # Download anything requested
     os.makedirs(tempDir + ".minecraft/")  # Download in here
     for option in toDownload:
-        currentFile = option["item"]
-        url.urlretrieve(url=root_url + option["item"] + ".tar.gz",
-                        filename=tempDir + ".minecraft/" + option["item"] +
-                                 ".tar.gz",
+        currentFile = option["item"] + ".tar.gz"
+        try:
+            url.urlretrieve(url=root_url + currentFile,
+                        filename=tempDir + ".minecraft/" + currentFile,
                         reporthook=urlretrievehook)
-
+        except:
+            print("Nepodařilo se stáhnout " + option["desc"] + " zkontrolujte své internetové "
+              "připojení a v případě přetrvávajících obtíží prosím nahlašte bug na "
+              "'https://forum.rebelgames.net/")
+            time.sleep(3)
+            exit(1)
     # Install anything downloaded
     for option in toDownload:
         if option["modpack"]:
