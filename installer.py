@@ -23,11 +23,19 @@ config = configparser.ConfigParser()
 new_profiles = []
 # Debug flag
 debug = False
+# Open logfile
+lof_file = open(file="log.txt", mode="at")
+
+
+def log(message):
+    print(message)
+    lof_file.write(message)
+    lof_file.flush()
 
 
 def print_debug(message="debug"):
     if debug:
-        print(message)
+        log(message)
 
 
 def accept(acceptTo):
@@ -38,17 +46,17 @@ def accept(acceptTo):
     elif temp == 'n' or temp == 'N':
         return False
     else:
-        print("Prosím používejte pouze Y pro ano, nebo N pro ne.")
+        log("Prosím používejte pouze Y pro ano, nebo N pro ne.")
         return accept(acceptTo)
 
 
 def print_makedirs_error(extended=""):
     """Prints default error message on os.makedirs()  fault. 'extended' is meant for extra info"""
-    print("Zdá se, že nelze vytvořit potřebnou složku. Může to být způsobeno například " +
-          "nedostatečnými privilegii.\nZkontrolujte, že spouštíte tento instalátor s " +
-          "právy dostačujícími pro zápis do zadané instalační lokace, a zkuste spustit tento " +
-          "instalátor znovu.\nV případě přetrvávajících problémů neváhejte někoho kontaktovat " +
-          "na 'https://forum.rebelgames.net/'. Hodně štěstí!" + extended)
+    log("Zdá se, že nelze vytvořit potřebnou složku. Může to být způsobeno například " +
+        "nedostatečnými privilegii.\nZkontrolujte, že spouštíte tento instalátor s " +
+        "právy dostačujícími pro zápis do zadané instalační lokace, a zkuste spustit tento " +
+        "instalátor znovu.\nV případě přetrvávajících problémů neváhejte někoho kontaktovat " +
+        "na 'https://forum.rebelgames.net/'. Hodně štěstí!" + extended)
     time.sleep(3)
     exit(1)
 
@@ -57,8 +65,8 @@ def urlretrievehook(in1, in2, in3):
     """Outputs progress of downloads"""
     if in1 * in2 >= in3:
         # Hack - add so many whitespace characters
-        print("Staženo 100 % z '" + currentFile + "', celková velikost: " + str(in3) + " B"
-                                                                                       "                  ")
+        log("Staženo 100 % z '" + currentFile + "', celková velikost: " + str(in3) + " B"
+                                                                                     "                  ")
     else:
         temp_toPrint = "Staženo " + str(int(in1 * in2 / (in3 / 100))) + " % (" + \
                        str(in1 * in2) + " B) z '" + currentFile + "', " + "celková velikost: " + \
@@ -66,7 +74,6 @@ def urlretrievehook(in1, in2, in3):
         print(temp_toPrint, end="")
         for x in range(len(temp_toPrint)):
             print("\b", end="")
-
 
 
 def addProfiles(data):
@@ -79,7 +86,7 @@ def addProfiles(data):
                                              u'lastVersionId': u'' + profile["forge"]}
         outfile = open(file=mainDir + "launcher_profiles.json", mode="w")
         json.dump(obj=data, fp=outfile, sort_keys=True, indent=4)
-    print("Hotovo")
+    log("Hotovo")
     print_debug("addProfiles Done")
 
 
@@ -89,7 +96,7 @@ def main():
     global mainDir  # For use in addProfiles()
 
     # Greeting
-    print("Vítejte v Linux Instalátoru RebelGames.net! (Adrijaned, v" + version + ")")
+    log("Vítejte v Linux Instalátoru RebelGames.net! (Adrijaned, v" + version + ")")
 
     # Get installation root.
     temp_bool = accept("Přejete si použít výchozí instalační lokaci '~/.minecraft/'?")
@@ -111,7 +118,7 @@ def main():
             except OSError:
                 print_makedirs_error()
         else:
-            print("Vytvořte prosím cílovou složku manuálně nebo zadejte instalaci do jiné lokace")
+            log("Vytvořte prosím cílovou složku manuálně nebo zadejte instalaci do jiné lokace")
             time.sleep(3)
             exit(0)
     print_debug("2")
@@ -144,9 +151,9 @@ def main():
     # versions released, just add those here
     accepted_java_versions = ["7", "8", "9", "10"]
     if java_version not in accepted_java_versions:
-        print("Vaše verze javy(" + java + ") je zastaralá a proto modpacky RebelGames.net " +
-              "nemusí být plně funkční.")
-        print("Prosím aktualizujte svou javu na novější verzi na 'https://java.com/'.")
+        log("Vaše verze javy(" + java + ") je zastaralá a proto modpacky RebelGames.net " +
+            "nemusí být plně funkční.")
+        log("Prosím aktualizujte svou javu na novější verzi na 'https://java.com/'.")
     print_debug("5")
 
     # Download config
@@ -157,9 +164,9 @@ def main():
                         reporthook=urlretrievehook)
     # Except nearly anything - there so many things that may go wrong and no way to handle them
     except:
-        print("Nepodařilo se stáhnout konfiguraci instalátoru, zkontrolujte své internetové "
-              "připojení a v případě přetrvávajících obtíží prosím nahlašte bug na "
-              "'https://forum.rebelgames.net/")
+        log("Nepodařilo se stáhnout konfiguraci instalátoru, zkontrolujte své internetové "
+            "připojení a v případě přetrvávajících obtíží prosím nahlašte bug na "
+            "'https://forum.rebelgames.net/")
         time.sleep(3)
         exit(1)
     # Allow developer versions of modpacks?
@@ -192,9 +199,9 @@ def main():
                             filename=tempDir + ".minecraft/" + currentFile,
                             reporthook=urlretrievehook)
         except:
-            print("Nepodařilo se stáhnout " + option["desc"] + " zkontrolujte své internetové "
-                                                               "připojení a v případě přetrvávajících obtíží prosím nahlašte bug na "
-                                                               "'https://forum.rebelgames.net/")
+            log("Nepodařilo se stáhnout " + option["desc"] + " zkontrolujte své internetové "
+                                                             "připojení a v případě přetrvávajících obtíží prosím nahlašte bug na "
+                                                             "'https://forum.rebelgames.net/")
             time.sleep(3)
             exit(1)
     print_debug("9")
@@ -215,16 +222,16 @@ def main():
 
     # Create profiles
     if os.path.exists(mainDir + "launcher_profiles.json"):
-        print("Přidávání profilů...", end="")
+        log("Přidávání profilů...")
         try:
             json_file = open(file=mainDir + "launcher_profiles.json")
             data = json.load(json_file)
             addProfiles(data=data)
         except ValueError:
-            print("Neplatný JSON. Zkuste odstranit soubor '§INSTALLDIR§/launcher_profiles.json'.")
+            log("Neplatný JSON. Zkuste odstranit soubor '§INSTALLDIR§/launcher_profiles.json'.")
             exit(1)
     elif accept("Nebyl nalezen soubor 'launcher_profiles.json'. Přejete si jej vytvořit? "):
-        print("Vytváření profilů...", end="")
+        log("Vytváření profilů...")
         data = {}
         data["authenticationDatabase"] = {}
         addProfiles(data=data)
@@ -232,7 +239,7 @@ def main():
 
     # Remove temporal directories
     shutil.rmtree(tempDir)
-    print("Instalace hotova")
+    log("Instalace hotova")
     time.sleep(3)
     print_debug("END")
 
