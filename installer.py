@@ -1,13 +1,13 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-import os
-import subprocess
-from urllib import request as url
 import configparser
-import shutil
-import tarfile
 import json
+import os
+import shutil
+import subprocess
+import tarfile
 import time
+from urllib import request as url
 
 # Version of installer
 version = "1.0"
@@ -21,6 +21,13 @@ currentFile = ""
 config = configparser.ConfigParser()
 # New launcher profiles to create
 new_profiles = []
+# Debug flag
+debug = False
+
+
+def print_debug(message="debug"):
+    if debug:
+        print(message)
 
 
 def accept(acceptTo):
@@ -61,10 +68,11 @@ def urlretrievehook(in1, in2, in3):
             print("\b", end="")
 
 
+
 def addProfiles(data):
     """Add profiles to launcher_profiles.json"""
     for profile in new_profiles:
-        if  "profiles" not in data:
+        if "profiles" not in data:
             data["profiles"] = {}
         data["profiles"][profile["name"]] = {u'gameDir': u'' + profile["dir"],
                                              u'name': u'' + profile["name"] + '',
@@ -72,11 +80,14 @@ def addProfiles(data):
         outfile = open(file=mainDir + "launcher_profiles.json", mode="w")
         json.dump(obj=data, fp=outfile, sort_keys=True, indent=4)
     print("Hotovo")
+    print_debug("addProfiles Done")
 
 
 def main():
+    print_debug("Start")
     global currentFile  # For use in urlretrievehook()
     global mainDir  # For use in addProfiles()
+
     # Greeting
     print("Vítejte v Linux Instalátoru RebelGames.net! (Adrijaned, v" + version + ")")
 
@@ -89,6 +100,7 @@ def main():
         if not mainDir[-1] == '/':
             mainDir += '/'
     mainDir = os.path.expanduser(mainDir)
+    print_debug("1")
 
     # Check for root to exist. If not, attemp to create
     if not os.path.isdir(mainDir):
@@ -102,6 +114,7 @@ def main():
             print("Vytvořte prosím cílovou složku manuálně nebo zadejte instalaci do jiné lokace")
             time.sleep(3)
             exit(0)
+    print_debug("2")
 
     # Create temp dir
     tempDir = "/tmp/rginstall/"
@@ -111,6 +124,7 @@ def main():
         os.makedirs(tempDir)
     except OSError:
         print_makedirs_error(extended="error in " + tempDir)
+    print_debug("3")
 
     # Check for 'versions' dir
     if not os.path.isdir(mainDir + "versions"):
@@ -118,6 +132,7 @@ def main():
             os.makedirs(mainDir + "versions")
         except OSError:
             print_makedirs_error()
+    print_debug("4")
 
     # Check java version
     # Get output from executing "java -version" (from stderr - because yellow fluffy rabbit)
@@ -132,6 +147,7 @@ def main():
         print("Vaše verze javy(" + java + ") je zastaralá a proto modpacky RebelGames.net " +
               "nemusí být plně funkční.")
         print("Prosím aktualizujte svou javu na novější verzi na 'https://java.com/'.")
+    print_debug("5")
 
     # Download config
     currentFile = "config.ini"
@@ -148,12 +164,14 @@ def main():
         exit(1)
     # Allow developer versions of modpacks?
     devVersions = accept("Chcete povolit testovací verze modpacků? ")
+    print_debug("6")
 
     # Do install forge + forgelibs?
     if accept("Chcete nainstalovat Forge? "):
         toDownload.append({"path": "versions/", "item": "forge", "modpack": False})
     if accept("Chcete nainstalovat knihovny Forge? "):
         toDownload.append({"path": "", "item": "libs", "modpack": False})
+    print_debug("7")
 
     # Read config, ask to install everything from it
     config.read(tempDir + "config.ini")
@@ -163,6 +181,7 @@ def main():
                 toDownload.append({"path": "", "item": section, "modpack": True,
                                    "desc": config.get(section, "description"),
                                    "forge": config.get(section, "forge")})
+    print_debug("8")
 
     # Download anything requested
     os.makedirs(tempDir + ".minecraft/")  # Download in here
@@ -170,14 +189,16 @@ def main():
         currentFile = option["item"] + ".tar.gz"
         try:
             url.urlretrieve(url=root_url + currentFile,
-                        filename=tempDir + ".minecraft/" + currentFile,
-                        reporthook=urlretrievehook)
+                            filename=tempDir + ".minecraft/" + currentFile,
+                            reporthook=urlretrievehook)
         except:
             print("Nepodařilo se stáhnout " + option["desc"] + " zkontrolujte své internetové "
-              "připojení a v případě přetrvávajících obtíží prosím nahlašte bug na "
-              "'https://forum.rebelgames.net/")
+                                                               "připojení a v případě přetrvávajících obtíží prosím nahlašte bug na "
+                                                               "'https://forum.rebelgames.net/")
             time.sleep(3)
             exit(1)
+    print_debug("9")
+
     # Install anything downloaded
     for option in toDownload:
         if option["modpack"]:
@@ -189,6 +210,8 @@ def main():
         tempFile = tarfile.open(name=tempDir + ".minecraft/" + option["item"] + ".tar.gz")
         tempFile.extractall(path=mainDir + option["path"] + option["item"])
         tempFile.close()
+    print_debug("toDownload = " + str(toDownload))
+    print_debug("10")
 
     # Create profiles
     if os.path.exists(mainDir + "launcher_profiles.json"):
@@ -205,11 +228,13 @@ def main():
         data = {}
         data["authenticationDatabase"] = {}
         addProfiles(data=data)
+    print_debug("11")
 
     # Remove temporal directories
     shutil.rmtree(tempDir)
     print("Instalace hotova")
     time.sleep(3)
+    print_debug("END")
 
 
 if __name__ == '__main__':
