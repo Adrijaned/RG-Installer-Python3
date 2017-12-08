@@ -32,6 +32,7 @@ V 1.1:
     * logging now writes newlines
     * I'm not exactly sure why it worked before, but now it is, as far as i 
         know, working, AKA forge extracts into the right directory
+    * Changed license from GNU GPL to MIT
 """
 
 
