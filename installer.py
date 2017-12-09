@@ -32,6 +32,8 @@ V 1.1:
     * logging now writes newlines
     * I'm not exactly sure why it worked before, but now it is, as far as i 
         know, working, AKA forge extracts into the right directory
+        * minor update: now even the second part of forge extracts into the
+            right directory
     * Changed license from GNU GPL to MIT
 """
 
@@ -250,7 +252,7 @@ def main():
         tempFile = tarfile.open(
             name=tempDir + ".minecraft/" + option["item"] + ".tar.gz")
         tempFile.extractall(path=mainDir + option["path"] + (option["item"] if
-        not option["item"] == "forge" else ""))
+        not (option["item"] in ("forge", "libs")) else ""))
         tempFile.close()
     print_debug("toDownload = " + str(toDownload))
     print_debug("10")
